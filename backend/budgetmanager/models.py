@@ -41,7 +41,7 @@ class Operation(models.Model):
     type = models.CharField(max_length=7, choices=OPERATION_TYPES)
     date = models.DateField()
     title = models.CharField(max_length=128)
-    category = models.ForeignKey(OperationCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    category = models.ForeignKey(OperationCategory, on_delete=models.SET_NULL, null=True)
     value = models.DecimalField(max_digits=8, decimal_places=2)
     by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='operations')
 

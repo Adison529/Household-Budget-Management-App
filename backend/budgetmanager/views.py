@@ -94,13 +94,23 @@ class BudgetManagerDeleteView(generics.DestroyAPIView):
 class OperationListCreateView(generics.ListCreateAPIView):
     queryset = Operation.objects.all()
     serializer_class = OperationSerializer
-    permission_classes = [IsAuthenticated, IsBudgetEditorOrAdmin]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
-            return self.queryset.all()
-        return self.queryset.filter(budget_manager__memberships__user=self.request.user)
+        budget_manager_id = self.kwargs.get('budget_manager_id')
+        budget_manager = get_object_or_404(BudgetManager, id=budget_manager_id)
+        
+        # Check if the user has access to this budget manager
+        user_access = UserAccess.objects.filter(
+            user=user, 
+            budget_manager=budget_manager
+        )
+        
+        if not user_access.exists() and not user.is_superuser:
+            raise PermissionDenied("You do not have permission to view operations for this budget manager.")
+
+        return self.queryset.filter(budget_manager=budget_manager)
     
     def perform_create(self, serializer):
         budget_manager_id = self.request.data.get('budget_manager')
@@ -122,6 +132,106 @@ class OperationListCreateView(generics.ListCreateAPIView):
             raise PermissionDenied({'detail': 'You do not have permission to perform this action.'})
         
         serializer.save(by=self.request.user, budget_manager=budget_manager)
+
+class OperationUpdateView(generics.UpdateAPIView):
+    queryset = Operation.objects.all()
+    serializer_class = OperationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        budget_manager_id = self.kwargs.get('budget_manager_id')
+        operation_id = self.kwargs.get('pk')
+        
+        # Ensure the operation belongs to the budget manager
+        obj = Operation.objects.filter(budget_manager_id=budget_manager_id, id=operation_id).first()
+        if not obj:
+            raise PermissionDenied("Operation not found in the specified budget manager.")
+        
+        user = self.request.user
+        budget_manager = obj.budget_manager
+
+        if user.is_superuser:
+            return obj
+
+        user_access = UserAccess.objects.filter(
+            user=user,
+            budget_manager=budget_manager,
+            role__in=['edit', 'admin']
+        )
+
+        if not user_access.exists():
+            raise PermissionDenied("You do not have permission to edit this operation.")
+
+        return obj
+    
+    # def get_object(self):
+    #     obj = super().get_object()
+    #     user = self.request.user
+    #     budget_manager = obj.budget_manager
+
+    #     if user.is_superuser:
+    #         return obj
+
+    #     user_access = UserAccess.objects.filter(
+    #         user=user,
+    #         budget_manager=budget_manager,
+    #         role__in=['edit', 'admin']
+    #     )
+
+    #     if not user_access.exists():
+    #         raise PermissionDenied("You do not have permission to edit this operation.")
+
+    #     return obj
+    
+class OperationDeleteView(generics.DestroyAPIView):
+    queryset = Operation.objects.all()
+    serializer_class = OperationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        budget_manager_id = self.kwargs.get('budget_manager_id')
+        operation_id = self.kwargs.get('pk')
+        
+        # Ensure the operation belongs to the budget manager
+        obj = Operation.objects.filter(budget_manager_id=budget_manager_id, id=operation_id).first()
+        if not obj:
+            raise PermissionDenied("Operation not found in the specified budget manager.")
+        
+        user = self.request.user
+        budget_manager = obj.budget_manager
+
+        if user.is_superuser:
+            return obj
+
+        user_access = UserAccess.objects.filter(
+            user=user,
+            budget_manager=budget_manager,
+            role__in=['edit', 'admin']
+        )
+
+        if not user_access.exists():
+            raise PermissionDenied("You do not have permission to delete this operation.")
+
+        return obj
+
+    # def get_object(self):
+    #     obj = super().get_object()
+    #     user = self.request.user
+    #     budget_manager = obj.budget_manager
+
+    #     if user.is_superuser:
+    #         return obj
+
+    #     user_access = UserAccess.objects.filter(
+    #         user=user,
+    #         budget_manager=budget_manager,
+    #         role__in=['edit', 'admin']
+    #     )
+
+    #     if not user_access.exists():
+    #         raise PermissionDenied("You do not have permission to delete this operation.")
+
+    #     return obj
 
 # Handle GET and POST requests to UserAccess
 # Authenticated users can retrieve UserAccess data only for households they are a member of (NOT IMPLEMENTED YET)

@@ -2,7 +2,8 @@ from django.urls import path
 from .views import RegisterView, CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import OperationCategoryListCreateView, OperationTypeListCreateView, BudgetManagerListCreateView, BudgetManagerUpdateView, BudgetManagerDeleteView
-from .views import OperationListCreateView, UserAccessListCreateView, UserAccessUpdateView, UserAccessDeleteView, AccessRequestListCreateView, AccessRequestUpdateView
+from .views import OperationListCreateView, OperationUpdateView, OperationDeleteView
+from .views import UserAccessListCreateView, UserAccessUpdateView, UserAccessDeleteView, AccessRequestListCreateView, AccessRequestUpdateView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -11,9 +12,12 @@ urlpatterns = [
     path('operation-categories/', OperationCategoryListCreateView.as_view(), name='operation_category_list_create'),
     path('operation-types/', OperationTypeListCreateView.as_view(), name='operation_type_list_create'),
     path('budget-managers/', BudgetManagerListCreateView.as_view(), name='budget_manager_list_create'),
-    path('budget-managers/<int:pk>/', BudgetManagerUpdateView.as_view(), name='budget-manager-update'),
-    path('budget-managers/delete/<int:pk>/', BudgetManagerDeleteView.as_view(), name='budget-manager-delete'),
-    path('operations/', OperationListCreateView.as_view(), name='operation_list_create'),
+    path('budget-managers/<int:pk>/edit/', BudgetManagerUpdateView.as_view(), name='budget-manager-update'),
+    path('budget-managers/<int:pk>/delete/', BudgetManagerDeleteView.as_view(), name='budget-manager-delete'),
+    #path('operations/', OperationListCreateView.as_view(), name='operation_list_create'),
+    path('budget-managers/<int:budget_manager_id>/operations/', OperationListCreateView.as_view(), name='operation-list-create'),
+    path('budget-managers/<int:budget_manager_id>/operations/<int:pk>/edit/', OperationUpdateView.as_view(), name='operation-edit'),
+    path('budget-managers/<int:budget_manager_id>/operations/<int:pk>/delete/', OperationDeleteView.as_view(), name='operation-delete'),
     path('user-access/', UserAccessListCreateView.as_view(), name='user_access_list_create'),
     path('user-access/<int:pk>/', UserAccessUpdateView.as_view(), name='user-access-update'),
     path('user-access/delete/<int:pk>/', UserAccessDeleteView.as_view(), name='user-access-delete'),

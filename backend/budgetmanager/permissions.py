@@ -16,6 +16,8 @@ class IsSuperuserOrReadOnly(permissions.BasePermission):
 class IsBudgetEditorOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
+        print(view.kwargs.get('budget_manager_id'))
+        print(request.data.get('budget_manager'))
         budget_manager_id = view.kwargs.get('budget_manager_id') or request.data.get('budget_manager')
         
         if user.is_superuser:
