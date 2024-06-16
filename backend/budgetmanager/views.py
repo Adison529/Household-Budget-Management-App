@@ -78,7 +78,7 @@ class BudgetManagerUpdateView(generics.UpdateAPIView):
 class BudgetManagerDeleteView(generics.DestroyAPIView):
     queryset = BudgetManager.objects.all()
     serializer_class = BudgetManagerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOfBudgetManager]
 
     def get_object(self):
         # Retrieve the BudgetManager instance based on the URL parameter (pk)
