@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 import uuid
 
-# operation category, e.g. groceries, cosmetics, car expenses, rent etc. as well as 'no category' to handle such cases
+# operation category, e.g. groceries, cosmetics, car expenses, rent etc. as well as 'no category' to handle cases where a user can't find a suitable category
 class OperationCategory(models.Model):
     name = models.CharField(max_length=64, unique=True)
 
@@ -27,7 +27,7 @@ class BudgetManager(models.Model):
 
 # operation, either an expense or income
 # includes FK to the household it's tied to, type (expense/income), date, title (brief description for the operation), category, value
-# optional "by" field if you want to add an user who created this operation
+# optional "by" field if you want to add an user who's responsible for the existence of the operation
 class Operation(models.Model):
     INCOME = 'income'
     EXPENSE = 'expense'
@@ -38,7 +38,6 @@ class Operation(models.Model):
     ]
     
     budget_manager = models.ForeignKey(BudgetManager, on_delete=models.CASCADE, related_name='operations')
-    #type = models.CharField(max_length=7, choices=OPERATION_TYPES)
     type = models.ForeignKey(OperationType, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
     title = models.CharField(max_length=128)

@@ -101,10 +101,6 @@ class OperationListSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OperationSerializer(serializers.ModelSerializer):
-    #by = UserSerializer(read_only=True, required=False)
-    #category = OperationCategorySerializer()
-    #type = OperationTypeSerializer()
-
     by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     category = serializers.PrimaryKeyRelatedField(queryset=OperationCategory.objects.all())
     type = serializers.PrimaryKeyRelatedField(queryset=OperationType.objects.all())
@@ -151,16 +147,6 @@ class OperationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
 
         return data
-    
-    # def validate(self, data):
-    #     # Check if 'category', 'type', 'date', 'title', and 'value' are provided in the request data
-    #     required_fields = ['category', 'type', 'date', 'title', 'value']
-    #     missing_fields = [field for field in required_fields if field not in data]
-
-    #     if missing_fields:
-    #         raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
-
-    #     return data
     
     def create(self, validated_data):
         # Fetch budget_manager_id from view kwargs (URL parameter)
@@ -255,46 +241,6 @@ class UserAccessUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Admin cannot downgrade their own role.")
         
         return data
-
-    # def __init__(self, *args, **kwargs):
-    #     # Exclude 'role' field if specified in context
-    #     exclude_fields = kwargs.pop('exclude_fields', [])
-    #     super().__init__(*args, **kwargs)
-
-    #     if 'role' in exclude_fields:
-    #         self.fields.pop('role')
-
-#class AccessRequestSerializer(serializers.ModelSerializer):
-#    class Meta:
-#        model = AccessRequest
-#        fields = '__all__'
-
-# class AccessRequestSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = AccessRequest
-#         fields = '__all__'
-#         #read_only_fields = ('user', 'budget_manager', 'created_at', 'updated_at', 'status')
-
-#     #def update(self, instance, validated_data):
-#     #    if 'status' in validated_data:
-#     #        new_status = validated_data['status']
-#     #        if new_status == AccessRequest.ACCEPTED and instance.status == AccessRequest.PENDING:
-#     #            UserAccess.objects.create(user=instance.user, budget_manager=instance.budget_manager, role=UserAccess.READ_ONLY)
-#     #    return super().update(instance, validated_data)
-
-# class AccessRequestSerializer(serializers.ModelSerializer):
-#     unique_id = serializers.UUIDField(write_only=True)
-
-#     class Meta:
-#         model = AccessRequest
-#         fields = ['id', 'user', 'budget_manager', 'status', 'created_at', 'updated_at', 'unique_id']
-#         read_only_fields = ['id', 'user', 'budget_manager', 'status', 'created_at', 'updated_at']
-
-#     def create(self, validated_data):
-#         unique_id = validated_data.pop('unique_id')
-#         budget_manager = get_object_or_404(BudgetManager, unique_id=unique_id)
-#         user = self.context['request'].user  # Get the user from the request context
-#         return AccessRequest.objects.create(user=user, budget_manager=budget_manager, **validated_data)
 
 class AccessRequestSerializer(serializers.ModelSerializer):
     user = UserSerializer()

@@ -46,13 +46,6 @@ class IsBudgetEditorOrAdmin(permissions.BasePermission):
             ).exists()
         
         return False
-    
-# class IsAdminOfBudgetManager(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated
-
-#     def has_object_permission(self, request, view, obj):
-#         return obj.budget_manager.admin == request.user
 
 class IsAdminOfBudgetManager(permissions.BasePermission):
     def has_permission(self, request, view):
