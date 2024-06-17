@@ -13,18 +13,19 @@ from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
 from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
 from .serializers import OperationCategorySerializer, OperationTypeSerializer, BudgetManagerSerializer, OperationSerializer, OperationListSerializer, UserAccessSerializer, UserAccessUpdateSerializer
 from .serializers import AccessRequestSerializer, AccessRequestCreateSerializer, AccessRequestUpdateSerializer
-from .permissions import IsAuthenticated, IsSuperuserOrReadOnly, IsBudgetEditorOrAdmin, IsAdminOfBudgetManager, IsAdminOfRelatedBudgetManager, IsBudgetMember
+from .permissions import IsUnauthenticated, IsAuthenticated, IsSuperuserOrReadOnly, IsBudgetEditorOrAdmin, IsAdminOfBudgetManager, IsAdminOfRelatedBudgetManager, IsBudgetMember
 
 # user registration
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     #permission_classes = (AllowAny,) # maybe should create new permission class IsUnauthentiacted and change it here
-    permission_classes = (AllowAny,)
+    permission_classes = [IsUnauthenticated]
     serializer_class = RegisterSerializer
 
 # user log in
 # custom TokenObtain due to the addition of username to the token
 class CustomTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [IsUnauthenticated]
     serializer_class = CustomTokenObtainPairSerializer
 
 class OperationCategoryListView(generics.ListAPIView):
@@ -340,6 +341,7 @@ class UserAccessDeleteView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated, IsAdminOfRelatedBudgetManager]
 
     def perform_destroy(self, instance):
+        user = instance.user
         # Prevent admin from deleting their own UserAccess entry
         if instance.user == self.request.user and instance.role == UserAccess.ADMIN:
             raise PermissionDenied('You cannot remove your own admin access.')

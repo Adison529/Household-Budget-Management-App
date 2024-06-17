@@ -1,3 +1,5 @@
+from datetime import date
+import re
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -11,15 +13,37 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(required=False)
 
     class Meta:
         model = User
         fields = ('username', 'password', 'email')
 
+    def validate_password(self, value):
+        # Check if password meets complexity requirements
+        if len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        
+        # Regex to check for at least one uppercase, one lowercase, one digit, and one special character
+        if not re.search(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', value):
+            raise serializers.ValidationError("Password must include at least one uppercase letter, one lowercase letter, one digit, and one special character.")
+        
+        return value
+
+    def validate(self, data):
+        # Check if 'username' and 'password' are provided in the request data
+        required_fields = ['username', 'password']
+        missing_fields = [field for field in required_fields if field not in data]
+
+        if missing_fields:
+            raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
+
+        return data
+
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
-            email=validated_data['email'],
+            #email=validated_data['email'],  # Ensure 'email' is present in validated_data
             password=validated_data['password']
         )
         return user
@@ -78,9 +102,10 @@ class OperationListSerializer(serializers.ModelSerializer):
 
 class OperationSerializer(serializers.ModelSerializer):
     #by = UserSerializer(read_only=True, required=False)
-    by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     #category = OperationCategorySerializer()
     #type = OperationTypeSerializer()
+
+    by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     category = serializers.PrimaryKeyRelatedField(queryset=OperationCategory.objects.all())
     type = serializers.PrimaryKeyRelatedField(queryset=OperationType.objects.all())
     budget_manager = BudgetManagerSerializer(read_only=True, required=False)
@@ -105,15 +130,37 @@ class OperationSerializer(serializers.ModelSerializer):
         
         return value
     
+    def validate_date(self, value):
+        if value > date.today():
+            raise serializers.ValidationError("The date cannot be in the future.")
+        return value
+    
+    def validate_value(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("The value must be greater than zero.")
+        return value
+    
     def validate(self, data):
-        # Check if 'category', 'type', 'date', 'title', and 'value' are provided in the request data
-        required_fields = ['category', 'type', 'date', 'title', 'value']
-        missing_fields = [field for field in required_fields if field not in data]
+        request = self.context.get('request')
+        if request.method == 'POST':
+            # Check if 'category', 'type', 'date', 'title', and 'value' are provided in the request data
+            required_fields = ['category', 'type', 'date', 'title', 'value']
+            missing_fields = [field for field in required_fields if field not in data]
 
-        if missing_fields:
-            raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
+            if missing_fields:
+                raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
 
         return data
+    
+    # def validate(self, data):
+    #     # Check if 'category', 'type', 'date', 'title', and 'value' are provided in the request data
+    #     required_fields = ['category', 'type', 'date', 'title', 'value']
+    #     missing_fields = [field for field in required_fields if field not in data]
+
+    #     if missing_fields:
+    #         raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
+
+    #     return data
     
     def create(self, validated_data):
         # Fetch budget_manager_id from view kwargs (URL parameter)
