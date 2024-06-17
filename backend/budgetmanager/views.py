@@ -18,7 +18,8 @@ from .permissions import IsAuthenticated, IsSuperuserOrReadOnly, IsBudgetEditorO
 # user registration
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (AllowAny,) # maybe should create new permission class IsUnauthentiacted and change it here
+    #permission_classes = (AllowAny,) # maybe should create new permission class IsUnauthentiacted and change it here
+    permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
 # user log in

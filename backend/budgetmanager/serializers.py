@@ -250,6 +250,9 @@ class UserAccessUpdateSerializer(serializers.ModelSerializer):
 #         return AccessRequest.objects.create(user=user, budget_manager=budget_manager, **validated_data)
 
 class AccessRequestSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    budget_manager = BudgetManagerSerializer()
+    
     class Meta:
         model = AccessRequest
         fields = ['id', 'user', 'budget_manager', 'status', 'created_at', 'updated_at']

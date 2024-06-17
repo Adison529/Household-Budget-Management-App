@@ -2,7 +2,7 @@ from rest_framework import permissions
 
 from .models import UserAccess, AccessRequest
 
-# Custom permission to allow only authenticated users to access the view
+# Custom permission to allow only authenticated users to access the view   
 class IsAuthenticated(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
