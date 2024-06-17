@@ -66,6 +66,16 @@ class BudgetManagerSerializer(serializers.ModelSerializer):
         validated_data['admin'] = request.user
         return super().create(validated_data)
 
+class OperationListSerializer(serializers.ModelSerializer):
+    by = UserSerializer()
+    category = OperationCategorySerializer()
+    type = OperationTypeSerializer()
+    budget_manager = BudgetManagerSerializer()
+
+    class Meta:
+        model = Operation
+        fields = '__all__'
+
 class OperationSerializer(serializers.ModelSerializer):
     #by = UserSerializer(read_only=True, required=False)
     by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)

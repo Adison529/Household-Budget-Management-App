@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
 from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
-from .serializers import OperationCategorySerializer, OperationTypeSerializer, BudgetManagerSerializer, OperationSerializer, UserAccessSerializer, UserAccessUpdateSerializer
+from .serializers import OperationCategorySerializer, OperationTypeSerializer, BudgetManagerSerializer, OperationSerializer, OperationListSerializer, UserAccessSerializer, UserAccessUpdateSerializer
 from .serializers import AccessRequestSerializer, AccessRequestCreateSerializer, AccessRequestUpdateSerializer
 from .permissions import IsAuthenticated, IsSuperuserOrReadOnly, IsBudgetEditorOrAdmin, IsAdminOfBudgetManager, IsAdminOfRelatedBudgetManager, IsBudgetMember
 
@@ -128,7 +128,7 @@ class BudgetManagerDeleteView(generics.DestroyAPIView):
 
 
 class OperationListView(generics.ListAPIView):
-    serializer_class = OperationSerializer
+    serializer_class = OperationListSerializer
     permission_classes = [IsAuthenticated, IsBudgetMember]
 
     def get_queryset(self):
