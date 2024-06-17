@@ -13,13 +13,24 @@ class IsSuperuserOrReadOnly(permissions.BasePermission):
             return True  # Allow GET, HEAD, OPTIONS requests
         return request.user and request.user.is_superuser
     
+class IsBudgetMember(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user      
+        budget_manager_id = view.kwargs.get('budget_manager_id')
+
+        if not budget_manager_id:
+            return False
+
+        # Check if the user has an entry in UserAccess for the BudgetManager
+        return UserAccess.objects.filter(
+            user=user,
+            budget_manager_id=budget_manager_id
+        ).exists()
+
 class IsBudgetEditorOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
         budget_manager_id = view.kwargs.get('budget_manager_id') or request.data.get('budget_manager')
-        
-        if user.is_superuser:
-            return True
         
         if budget_manager_id:
             return UserAccess.objects.filter(
@@ -30,16 +41,31 @@ class IsBudgetEditorOrAdmin(permissions.BasePermission):
         
         return False
     
+# class IsAdminOfBudgetManager(permissions.BasePermission):
+#     def has_permission(self, request, view):
+#         return request.user.is_authenticated
+
+#     def has_object_permission(self, request, view, obj):
+#         return obj.budget_manager.admin == request.user
+
 class IsAdminOfBudgetManager(permissions.BasePermission):
     def has_permission(self, request, view):
-        #if request.user.is_superuser:
-        #    return True
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        #if request.user.is_superuser:
-        #    return True
-        return obj.budget_manager.admin == request.user
+        user = request.user
+
+        # Check if the user is the admin of the BudgetManager object
+        is_admin_of_budget_manager = obj.admin == user
+
+        # Check if the user has an entry in UserAccess with role 'admin' for the BudgetManager
+        has_admin_role_in_user_access = UserAccess.objects.filter(
+            user=user,
+            budget_manager=obj,
+            role=UserAccess.ADMIN
+        ).exists()
+
+        return is_admin_of_budget_manager and has_admin_role_in_user_access
 
 # unsure what is this permission class for
 class IsAdminOfRelatedBudgetManager(permissions.BasePermission):
@@ -47,8 +73,6 @@ class IsAdminOfRelatedBudgetManager(permissions.BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser:
-            return True
         if isinstance(obj, AccessRequest):
             return obj.budget_manager.admin == request.user
         if isinstance(obj, UserAccess):
