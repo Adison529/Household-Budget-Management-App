@@ -38,7 +38,8 @@ class Operation(models.Model):
     ]
     
     budget_manager = models.ForeignKey(BudgetManager, on_delete=models.CASCADE, related_name='operations')
-    type = models.CharField(max_length=7, choices=OPERATION_TYPES)
+    #type = models.CharField(max_length=7, choices=OPERATION_TYPES)
+    type = models.ForeignKey(OperationType, on_delete=models.SET_NULL, null=True)
     date = models.DateField()
     title = models.CharField(max_length=128)
     category = models.ForeignKey(OperationCategory, on_delete=models.SET_NULL, null=True)

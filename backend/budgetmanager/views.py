@@ -95,9 +95,7 @@ class BudgetManagerListCreateView(generics.ListCreateAPIView):
         ).distinct()
 
     def perform_create(self, serializer):
-        # Automatically assign current user as admin of the BudgetManager
-        instance = serializer.save(admin=self.request.user)
-        
+        instance = serializer.save()
         # Create UserAccess entry for admin role
         UserAccess.objects.create(user=self.request.user, budget_manager=instance, role=UserAccess.ADMIN)
     

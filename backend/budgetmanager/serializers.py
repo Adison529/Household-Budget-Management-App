@@ -7,7 +7,7 @@ from .models import OperationCategory, OperationType, BudgetManager, Operation, 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -42,7 +42,7 @@ class OperationTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BudgetManagerSerializer(serializers.ModelSerializer):
-    admin = UserSerializer()
+    admin = UserSerializer(read_only=True)
 
     class Meta:
         model = BudgetManager
@@ -60,9 +60,20 @@ class BudgetManagerSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You already have a budget with this name.")
         return value
 
+    def create(self, validated_data):
+        request = self.context['request']
+        # Automatically assign the current user as the admin
+        validated_data['admin'] = request.user
+        return super().create(validated_data)
+
 class OperationSerializer(serializers.ModelSerializer):
-    by = UserSerializer()
-    category = OperationCategorySerializer()
+    #by = UserSerializer(read_only=True, required=False)
+    by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+    #category = OperationCategorySerializer()
+    #type = OperationTypeSerializer()
+    category = serializers.PrimaryKeyRelatedField(queryset=OperationCategory.objects.all())
+    type = serializers.PrimaryKeyRelatedField(queryset=OperationType.objects.all())
+    budget_manager = BudgetManagerSerializer(read_only=True, required=False)
 
     class Meta:
         model = Operation
@@ -85,10 +96,12 @@ class OperationSerializer(serializers.ModelSerializer):
         return value
     
     def validate(self, data):
-        # Check if 'category' is provided in the request data
-        if self.context['request'].method == 'POST':  # Check if method is POST
-            if 'category' not in data:
-                raise serializers.ValidationError({'category': 'This field is required.'})
+        # Check if 'category', 'type', 'date', 'title', and 'value' are provided in the request data
+        required_fields = ['category', 'type', 'date', 'title', 'value']
+        missing_fields = [field for field in required_fields if field not in data]
+
+        if missing_fields:
+            raise serializers.ValidationError({field: 'This field is required.' for field in missing_fields})
 
         return data
     
@@ -104,6 +117,10 @@ class OperationSerializer(serializers.ModelSerializer):
 
         # Assign the budget_manager to the validated data
         validated_data['budget_manager'] = budget_manager
+
+        # Optionally set the 'by' field to the current user if not provided
+        # if 'by' not in validated_data:
+        #     validated_data['by'] = self.context['request'].user
 
         # Create and return the Operation object
         return Operation.objects.create(**validated_data)
