@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -37,6 +42,8 @@ class OperationTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BudgetManagerSerializer(serializers.ModelSerializer):
+    admin = UserSerializer()
+
     class Meta:
         model = BudgetManager
         fields = '__all__'
@@ -54,6 +61,9 @@ class BudgetManagerSerializer(serializers.ModelSerializer):
         return value
 
 class OperationSerializer(serializers.ModelSerializer):
+    by = UserSerializer()
+    category = OperationCategorySerializer()
+
     class Meta:
         model = Operation
         fields = '__all__'
@@ -105,6 +115,9 @@ class OperationSerializer(serializers.ModelSerializer):
         return instance
     
 class UserAccessSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    budget_manager = BudgetManagerSerializer()
+    
     class Meta:
         model = UserAccess
         fields = '__all__'
