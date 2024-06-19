@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const isDevelopment = process.env.NODE_ENV === 'development'
-const baseUrl = isDevelopment ? import.meta.env.REACT_APP_BASE_URL_LOCAL : import.meta.env.REACT_APP_BASE_URL_PROD
+const baseUrl = isDevelopment ? process.env.REACT_APP_BASE_URL_LOCAL : process.env.REACT_APP_BASE_URL_PROD
 
 const api = axios.create({
   baseURL: baseUrl,
