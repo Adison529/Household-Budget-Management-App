@@ -88,7 +88,7 @@ class BudgetManagerDeleteView(generics.DestroyAPIView):
 
 class OperationListView(generics.ListAPIView):
     serializer_class = OperationListSerializer
-    permission_classes = [IsAuthenticated, IsBudgetMember]
+    #permission_classes = [IsAuthenticated, IsBudgetMember]
 
     def get_queryset(self):
         budget_manager_id = self.kwargs['budget_manager_id']
