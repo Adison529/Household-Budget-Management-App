@@ -1,0 +1,16 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.container {
+  margin-top: 20px;
+}
+
+.text-income {
+  color: green; /* Zielony tekst dla dochodów */
+}
+
+.text-expense {
+  color: rgb(243, 84, 84); /* Czerwony tekst dla wydatków */
+}
+

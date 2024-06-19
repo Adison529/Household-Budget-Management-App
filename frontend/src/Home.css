@@ -1,0 +1,24 @@
+.budget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1rem;
+  }
+  
+  .budget-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .card {
+    height: 12rem; /* Ustalona wysokość dla wszystkich kafelków */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .card-title {
+    text-align: center;
+  }
+  
