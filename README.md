@@ -37,7 +37,7 @@ To run the application locally, please follow these steps:
    python manage.py runserver
    ```
 
-5. Install dependencies for the React.js frontend in new terminal:
+5. Install dependencies for the React.js frontend in new terminal, make sure that you have your virtual environment running:
 
    ```bash
    cd frontend

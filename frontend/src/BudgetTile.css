@@ -99,15 +99,27 @@
     padding: 10px;
     background-color: #f8f9fa;
     border-radius: 5px;
-  }
-  
-  .member-name {
-    flex-grow: 1;
-  }
-  
-  .role-select {
+    position: relative; /* Ensure each member item is positioned relative */
+}
+
+.member-item .budget-card-trash {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    left: 10px; /* Add some space to the left */
+    transform: translateY(-50%);
+    font-size: 20px; /* Adjust size as needed */
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.member-name {
+  flex-grow: 1;
+  margin-left: 30px; /* Add some margin to the left to avoid overlap with the trash icon */
+  position: relative;
+}
+
+.role-select {
     width: 150px;
     display: inline-block;
     margin-left: 10px;
-  }
-  
+}
