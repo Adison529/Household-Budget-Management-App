@@ -1,0 +1,125 @@
+.budget-card {
+    width: 18rem;
+    height: 12rem;
+    margin: 1rem;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .budget-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .budget-card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .budget-card-title {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  
+  .budget-card-text {
+    text-align: center;
+  }
+  
+  .budget-card-icon {
+    padding: 0;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+  
+  .budget-card-notification {
+    color: red;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .budget-card-notification:hover {
+    transform: scale(1.05);
+  }
+  
+  .budget-card-trash {
+    color: red;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .budget-card-trash:hover {
+    transform: scale(1.05);
+  }
+  
+  .budget-card-people {
+    color: blue;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .budget-card-people:hover {
+    transform: scale(1.05);
+  }
+  
+  .access-request-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  .members-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    position: relative; /* Ensure each member item is positioned relative */
+}
+
+.member-item .budget-card-trash {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    left: 10px; /* Add some space to the left */
+    transform: translateY(-50%);
+    font-size: 20px; /* Adjust size as needed */
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.member-name {
+  flex-grow: 1;
+  margin-left: 30px; /* Add some margin to the left to avoid overlap with the trash icon */
+  position: relative;
+}
+
+.role-select {
+    width: 150px;
+    display: inline-block;
+    margin-left: 10px;
+}
