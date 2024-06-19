@@ -19,9 +19,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS_ALLOWED_ORIGINS = [
-
-# ]
+CORS_ALLOWED_ORIGINS = [
+    'https://victorious-mushroom-0edb7f303.5.azurestaticapps.net'
+]
 
 STORAGES = {
     "default": {
