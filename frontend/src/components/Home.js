@@ -6,6 +6,7 @@ import BudgetTile from './BudgetTile';
 import '../Home.css'; // Importujemy plik CSS
 
 function Home() {
+  const savedUsername = localStorage.getItem('username'); // Get username from local storage
   const [budgets, setBudgets] = useState([]);
   const [currentUser, setCurrentUser] = useState(savedUsername ? { username: savedUsername } : null);
   const [show, setShow] = useState(false);
@@ -13,7 +14,6 @@ function Home() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const token = localStorage.getItem('token');
-  const savedUsername = localStorage.getItem('username'); // Get username from local storage
 
   useEffect(() => {
     if (token) {
