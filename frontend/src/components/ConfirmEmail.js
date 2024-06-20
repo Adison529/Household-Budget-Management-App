@@ -11,8 +11,12 @@ const ConfirmEmail = () => {
     useEffect(() => {
         const confirmEmail = async () => {
             try {
-                await axios.get(`https://budgetmanager-web-app-backend.azurewebsites.net/confirm-email/${uid}/${token}/`);
-                setStatus('success');
+                const response = await axios.get(`https://budgetmanager-web-app-backend.azurewebsites.net/confirm-email/${uid}/${token}/`);
+                if (response.status === 200) {
+                    setStatus('success');
+                } else {
+                    setStatus('expired');
+                }
             } catch (error) {
                 if (error.response && error.response.status === 400) {
                     setStatus('expired');
