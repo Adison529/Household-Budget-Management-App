@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Container, Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
 function RegisterForm() {
@@ -13,7 +12,6 @@ function RegisterForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
-  const navigate = useNavigate();
   const [correctCaptchaAnswer, setCorrectCaptchaAnswer] = useState('');
 
   // Generate CAPTCHA question
