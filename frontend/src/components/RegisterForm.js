@@ -7,26 +7,28 @@ function RegisterForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [captchaQuestion, setCaptchaQuestion] = useState('');
   const [captchaAnswer, setCaptchaAnswer] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const navigate = useNavigate();
   const [correctCaptchaAnswer, setCorrectCaptchaAnswer] = useState('');
 
-  // Generowanie pytania CAPTCHA
+  // Generate CAPTCHA question
   const generateCaptchaQuestion = () => {
-    const num1 = Math.floor(Math.random() * 10) + 1; 
-    const num2 = Math.floor(Math.random() * 10) + 1; 
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
     const question = `What is ${num1} + ${num2}?`;
     const answer = num1 + num2;
     setCaptchaQuestion(question);
-    setCorrectCaptchaAnswer(answer.toString()); 
+    setCorrectCaptchaAnswer(answer.toString());
   };
 
   useEffect(() => {
     generateCaptchaQuestion();
-  }, []); 
+  }, []);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -49,12 +51,10 @@ function RegisterForm() {
     }
 
     try {
-      await api.post('/register/', { username, password });
-      setSuccess('Registration successful! Redirecting to login...');
+      await api.post('/register/', { username, password, email });
+      setSuccess('');
       setError('');
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      setAwaitingConfirmation(true);
     } catch (error) {
       setError('There was an error registering!');
       setSuccess('');
@@ -70,50 +70,66 @@ function RegisterForm() {
       <h2>Register</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
-      <Form onSubmit={handleRegister}>
-        <Form.Group controlId="username">
-          <Form.Label>Username</Form.Label>
-          <Form.Control
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </Form.Group>
-        <Form.Group controlId="password">
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <Form.Text className="text-muted">
-            Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and be at least 8 characters long.
-          </Form.Text>
-        </Form.Group>
-        <Form.Group controlId="confirmPassword">
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </Form.Group>
-        <Form.Group controlId="captcha">
-          <Form.Label>{captchaQuestion}</Form.Label>
-          <Form.Control
-            type="text"
-            value={captchaAnswer}
-            onChange={(e) => setCaptchaAnswer(e.target.value)}
-            required
-          />
-        </Form.Group>
-        <Button variant="primary" type="submit" className="mt-3">
-          Register
-        </Button>
-      </Form>
+      {awaitingConfirmation && (
+        <Alert variant="info">
+          Registration successful! Please check your email to confirm your registration.
+        </Alert>
+      )}
+      {!awaitingConfirmation && (
+        <Form onSubmit={handleRegister}>
+          <Form.Group controlId="username">
+            <Form.Label>Username</Form.Label>
+            <Form.Control
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="email">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="password">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Form.Text className="text-muted">
+              Password must contain at least one uppercase letter, one lowercase letter, one digit, one special character, and be at least 8 characters long.
+            </Form.Text>
+          </Form.Group>
+          <Form.Group controlId="confirmPassword">
+            <Form.Label>Confirm Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="captcha">
+            <Form.Label>{captchaQuestion}</Form.Label>
+            <Form.Control
+              type="text"
+              value={captchaAnswer}
+              onChange={(e) => setCaptchaAnswer(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit" className="mt-3">
+            Register
+          </Button>
+        </Form>
+      )}
     </Container>
   );
 }

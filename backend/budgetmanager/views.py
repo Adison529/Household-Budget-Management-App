@@ -15,6 +15,10 @@ from .serializers import OperationSerializer, OperationListSerializer # Serializ
 from .serializers import UserAccessSerializer, UserAccessUpdateSerializer # Serializers for UserAccess
 from .serializers import AccessRequestSerializer, AccessRequestCreateSerializer, AccessRequestUpdateSerializer # Serializers for AccessRequest
 from .permissions import IsUnauthenticated, IsAuthenticated, IsBudgetEditorOrAdmin, IsAdminOfBudgetManager, IsAdminOfRelatedBudgetManager, IsBudgetMember
+from django.utils.http import urlsafe_base64_decode
+from django.http import HttpResponse
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework.views import APIView
 
 # user registration
 class RegisterView(generics.CreateAPIView):
@@ -27,6 +31,23 @@ class RegisterView(generics.CreateAPIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     permission_classes = [IsUnauthenticated]
     serializer_class = CustomTokenObtainPairSerializer
+
+class EmailConfirmView(APIView):
+    def get(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            return HttpResponse('Email confirmed successfully!')
+        else:
+            if user is not None:
+                user.delete()
+            return HttpResponse('Invalid confirmation link.', status=400)
 
 class OperationCategoryListView(generics.ListAPIView):
     queryset = OperationCategory.objects.all()

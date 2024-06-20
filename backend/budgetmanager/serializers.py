@@ -1,10 +1,16 @@
 from datetime import date
 import re
 from django.shortcuts import get_object_or_404
+import requests
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    email = serializers.EmailField(required=False)
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
@@ -32,7 +38,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Check if 'username' and 'password' are provided in the request data
-        required_fields = ['username', 'password']
+        required_fields = ['username', 'password', 'email']
         missing_fields = [field for field in required_fields if field not in data]
 
         if missing_fields:
@@ -43,10 +49,30 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
-            #email=validated_data['email'],  # Ensure 'email' is present in validated_data
-            password=validated_data['password']
+            email=validated_data['email'],
+            password=validated_data['password'],
+            is_active=False
         )
+        self.send_confirmation_email(user)
+        
         return user
+    
+    def send_confirmation_email(self, user):
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        confirmation_link = reverse('email_confirm', args=[uid, token])
+        full_link = f'https://victorious-mushroom-0edb7f303.5.azurestaticapps.net{confirmation_link}'
+
+        subject = 'Confirm your registration'
+        body = f'Click the following link to confirm your registration: {full_link}'
+
+        payload = {
+            "to": user.email,
+            "subject": subject,
+            "body": body
+        }
+
+        requests.post('https://prod2-01.germanywestcentral.logic.azure.com:443/workflows/2ea9f7197eb545cd8bca2e4845cedc0d/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=HKgkkRmRKlDPNilqpFhWTtr1BeHEA6PGANXifu3K5ao', json=payload)
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod

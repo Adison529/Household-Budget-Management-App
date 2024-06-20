@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, CustomTokenObtainPairView
+from .views import RegisterView, CustomTokenObtainPairView, EmailConfirmView
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import OperationCategoryListView, OperationTypeListView
 from .views import BudgetManagerListCreateView, BudgetManagerUpdateView, BudgetManagerDeleteView, BudgetManagerMembersView
@@ -11,6 +11,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('confirm-email/<uidb64>/<token>/', EmailConfirmView.as_view(), name='email_confirm'),
 
     # new categories/types should be added via Django admin panel
     path('operation-categories/', OperationCategoryListView.as_view(), name='operation_category_list'), # GET for operation categories

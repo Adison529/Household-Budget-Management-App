@@ -8,6 +8,7 @@ import Home from './components/Home';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import { AuthProvider, AuthContext } from './AuthProvider';
+import ConfirmEmail from './components/ConfirmEmail';
 
 const App = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
       <Route path="/budget-managers/:budget_manager_id/operations" element={auth.isAuthenticated ? <BudgetOperations /> : <Navigate to="/login" />} />
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
+      <Route path="/confirm-email/:uid/:token" component={ConfirmEmail} />
     </Routes>
   );
 };
