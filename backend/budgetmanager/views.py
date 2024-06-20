@@ -19,6 +19,8 @@ from django.utils.http import urlsafe_base64_decode
 from django.http import HttpResponse
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.views import APIView
+from django.utils.encoding import force_str
+from django.http import JsonResponse
 
 # user registration
 class RegisterView(generics.CreateAPIView):
@@ -33,22 +35,22 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 class EmailConfirmView(APIView):
-    def get(self, request, uidb64, token):
+    def post(self, request, uidb64, token):
         try:
-            uid = urlsafe_base64_decode(uidb64).decode()
+            uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
+            return JsonResponse({'status': 'error', 'message': 'Invalid user ID'}, status=400)
 
         if user is not None and default_token_generator.check_token(user, token):
             user.is_active = True
             user.save()
-            return HttpResponse('Email confirmed successfully!')
+            return JsonResponse({'status': 'success', 'message': 'Email confirmed successfully'})
         else:
             if user is not None:
                 user.delete()
-            return HttpResponse('Invalid confirmation link.', status=400)
-
+            return JsonResponse({'status': 'error', 'message': 'Invalid or expired token'}, status=400)
+        
 class OperationCategoryListView(generics.ListAPIView):
     queryset = OperationCategory.objects.all()
     serializer_class = OperationCategorySerializer
