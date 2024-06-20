@@ -9,7 +9,7 @@ const ConfirmEmail = () => {
 
     const confirmEmail = async () => {
         try {
-            const response = await axios.post(`https://budgetmanager-web-app-backend.azurewebsites.net/confirm-email/${uid}/${token}/`);
+            const response = await axios.post(`https://budgetmanager-web-app-backend.azurewebsites.net/api/confirm-email/${uid}/${token}/`);
             if (response.data.status === 'success') {
                 setStatus('success');
             } else {
