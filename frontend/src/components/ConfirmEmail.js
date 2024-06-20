@@ -11,7 +11,8 @@ const ConfirmEmail = () => {
 
     const confirmEmail = useCallback(async () => {
         try {
-            const response = await axios.post(`https://budgetmanager-web-app-backend.azurewebsites.net/api/confirm-email/${uid}/${token}/`);
+            const baseURL = process.env.NODE_ENV === 'development' ? 'http://localhost:8000' : 'https://budgetmanager-web-app-backend.azurewebsites.net';
+            const response = await axios.post(`${baseURL}/api/confirm-email/${uid}/${token}/`);
             if (response.data.status === 'success') {
                 setStatus('success');
                 setTimeout(() => {

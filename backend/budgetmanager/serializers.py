@@ -1,16 +1,14 @@
 from datetime import date
+import os
 import re
-from django.shortcuts import get_object_or_404
 import requests
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -61,7 +59,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         confirmation_link = f'/confirm-email/{uid}/{token}/'
-        full_link = f'https://victorious-mushroom-0edb7f303.5.azurestaticapps.net{confirmation_link}'
+        base_url = 'https://victorious-mushroom-0edb7f303.5.azurestaticapps.net' if 'WEBSITE_HOSTNAME' in os.environ else 'http://localhost:3000'
+        full_link = f'{base_url}{confirmation_link}'
 
         subject = 'Confirm your registration'
         body = f'Click the following link to confirm your registration: {full_link}'

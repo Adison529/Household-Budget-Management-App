@@ -1,12 +1,15 @@
-
-from django.forms import ValidationError
 from rest_framework import generics, status
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import PermissionDenied
 from django.db import models
-from rest_framework_simplejwt.views import TokenObtainPairView
+from django.http import JsonResponse
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
 from .models import OperationCategory, OperationType, BudgetManager, Operation, UserAccess, AccessRequest
 from .serializers import OperationCategorySerializer, OperationTypeSerializer # Serializers for OperationCategory and OperationType
@@ -15,12 +18,6 @@ from .serializers import OperationSerializer, OperationListSerializer # Serializ
 from .serializers import UserAccessSerializer, UserAccessUpdateSerializer # Serializers for UserAccess
 from .serializers import AccessRequestSerializer, AccessRequestCreateSerializer, AccessRequestUpdateSerializer # Serializers for AccessRequest
 from .permissions import IsUnauthenticated, IsAuthenticated, IsBudgetEditorOrAdmin, IsAdminOfBudgetManager, IsAdminOfRelatedBudgetManager, IsBudgetMember
-from django.utils.http import urlsafe_base64_decode
-from django.http import HttpResponse
-from django.contrib.auth.tokens import default_token_generator
-from rest_framework.views import APIView
-from django.utils.encoding import force_str
-from django.http import JsonResponse
 
 # user registration
 class RegisterView(generics.CreateAPIView):
