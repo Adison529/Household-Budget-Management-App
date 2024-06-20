@@ -60,7 +60,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def send_confirmation_email(self, user):
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        confirmation_link = reverse('email_confirm', args=[uid, token])
+        confirmation_link = f'/confirm-email/{uid}/{token}/'
         full_link = f'https://victorious-mushroom-0edb7f303.5.azurestaticapps.net{confirmation_link}'
 
         subject = 'Confirm your registration'
