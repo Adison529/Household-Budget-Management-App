@@ -32,7 +32,7 @@ const AppRoutes = () => {
       <Route path="/budget-managers/:budget_manager_id/operations" element={auth.isAuthenticated ? <BudgetOperations /> : <Navigate to="/login" />} />
       <Route path="/login" element={<LoginForm />} />
       <Route path="/register" element={<RegisterForm />} />
-      <Route path="/confirm-email/:uid/:token" component={ConfirmEmail} />
+      <Route path="/confirm-email/:uid/:token" element={<ConfirmEmail />} />
     </Routes>
   );
 };
