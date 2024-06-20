@@ -138,6 +138,8 @@ function BudgetOperations() {
 
     if (form.by) {
       operationData.by = parseInt(form.by);
+    } else {
+      operationData.by = null; // Set by to null if no user is selected
     }
 
     try {

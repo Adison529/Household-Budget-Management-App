@@ -101,7 +101,7 @@ class OperationListSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OperationSerializer(serializers.ModelSerializer):
-    by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+    by = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
     category = serializers.PrimaryKeyRelatedField(queryset=OperationCategory.objects.all())
     type = serializers.PrimaryKeyRelatedField(queryset=OperationType.objects.all())
     budget_manager = BudgetManagerSerializer(read_only=True, required=False)
@@ -112,6 +112,9 @@ class OperationSerializer(serializers.ModelSerializer):
         read_only_fields = ['budget_manager']
         
     def validate_by(self, value):
+        if value is None:
+            return value  # Allow null value
+        
         request = self.context.get('request')
         budget_manager_id = self.context['view'].kwargs.get('budget_manager_id')
         
