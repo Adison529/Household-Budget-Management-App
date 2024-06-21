@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, Container, Alert, Button, Modal, Form } from 'react-bootstrap';
-import { PencilSquare } from 'react-bootstrap-icons'; // Import ikony PencilSquare
+import { Table, Container, Alert, Button, Modal, Form, Badge } from 'react-bootstrap';
+import { PencilSquare, Trash } from 'react-bootstrap-icons'; // Import ikony PencilSquare
 import api from '../api';
+
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import 'chart.js/auto';
+import moment from 'moment';
+import '../BudgetOperationsGraphs.css';
 
 function BudgetOperations() {
   const { budget_manager_id } = useParams();
@@ -94,6 +99,135 @@ function BudgetOperations() {
     fetchMembers();
   }, [budget_manager_id]);
 
+  const processExpenseIncomeData = (operations) => {
+    const dataByMonth = {};
+
+    operations.forEach(op => {
+      const month = moment(op.date).format('YYYY-MM');
+
+      if (!dataByMonth[month]) {
+        dataByMonth[month] = { income: 0, expense: 0 };
+      }
+
+      if (op.type.name === 'Income') {
+        dataByMonth[month].income += parseFloat(op.value);
+      } else {
+        dataByMonth[month].expense += parseFloat(op.value);
+      }
+    });
+
+    const labels = Object.keys(dataByMonth).sort();
+    const incomeData = labels.map(label => dataByMonth[label].income);
+    const expenseData = labels.map(label => dataByMonth[label].expense);
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Monthly Income',
+          data: incomeData,
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+        {
+          label: 'Monthly Expenses',
+          data: expenseData,
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  const processBalanceData = (operations) => {
+    const balanceByMonth = {};
+    const monthlyOperations = {};
+  
+    // Group operations by month
+    operations.forEach(op => {
+      const month = moment(op.date).format('YYYY-MM');
+  
+      if (!monthlyOperations[month]) {
+        monthlyOperations[month] = [];
+      }
+  
+      monthlyOperations[month].push(op);
+    });
+  
+    // Calculate balance for each month
+    Object.keys(monthlyOperations).forEach(month => {
+      let cumulativeIncome = 0;
+      let cumulativeExpenses = 0;
+  
+      monthlyOperations[month].forEach(op => {
+        if (op.type.name === 'Income') {
+          cumulativeIncome += parseFloat(op.value);
+        } else {
+          cumulativeExpenses += parseFloat(op.value);
+        }
+      });
+  
+      balanceByMonth[month] = cumulativeIncome - cumulativeExpenses;
+    });
+  
+    const labels = Object.keys(balanceByMonth).sort();
+    const data = labels.map(label => balanceByMonth[label]);
+  
+    return {
+      labels,
+      datasets: [{
+        label: 'Monthly Balance',
+        data,
+        fill: false,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        tension: 0.1,
+        yAxisID: 'balance-y-axis',
+      }],
+    };
+  };  
+
+  const processCurrentMonthCategoryData = (operations) => {
+    const currentMonth = moment().format('YYYY-MM');
+    const expensesByCategory = {};
+
+    operations.filter(op => op.type.name === 'Expense' && moment(op.date).format('YYYY-MM') === currentMonth).forEach(op => {
+      if (!expensesByCategory[op.category.name]) {
+        expensesByCategory[op.category.name] = 0;
+      }
+
+      expensesByCategory[op.category.name] += parseFloat(op.value);
+    });
+
+    const labels = Object.keys(expensesByCategory);
+    const data = labels.map(label => expensesByCategory[label]);
+
+    return {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ],
+        borderWidth: 1,
+      }],
+    };
+  };
+
   const handleShow = () => setShow(true);
   const handleClose = () => {
     setShow(false);
@@ -114,6 +248,19 @@ function BudgetOperations() {
       value: operation.value.toString(),
       by: operation.by ? operation.by.id.toString() : ''
     });
+  };
+
+  const handleDeleteOperation = async (operation) => {
+    if (window.confirm(`Are you sure you want to delete the operation "${operation.title}"?`)) {
+      try {
+        await api.delete(`/budget-managers/${budget_manager_id}/operations/${operation.id}/delete/`);
+        window.location.reload();
+      } catch (error) {
+        const errorMessage = error.response?.data?.detail || JSON.stringify(error.response?.data) || error.message;
+        setError(`There was an error deleting the operation: ${errorMessage}`);
+        console.error("There was an error deleting the operation!", error.response?.data || error);
+      }
+    }
   };
 
   const handleChange = (e) => {
@@ -173,10 +320,14 @@ function BudgetOperations() {
       <h2>Budget Operations</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       <div className="d-flex justify-content-between mb-3">
-        <div style={{ color: 'green' }}>Income: ${incomeSum.toFixed(2)}</div>
-        <div style={{ color: 'red' }}>Expense: ${expenseSum.toFixed(2)}</div>
-        <div style={{ color: balance >= 0 ? 'green' : 'red' }}>
-          Balance: ${balance.toFixed(2)}
+        <div>
+          <h4 className="mb-0">Income: <Badge bg="success">${incomeSum.toFixed(2)}</Badge></h4>
+        </div>
+        <div>
+          <h4 className="mb-0">Expenses: <Badge bg="danger">${expenseSum.toFixed(2)}</Badge></h4>
+        </div>
+        <div>
+          <h4 className="mb-0">Balance: <Badge bg={balance >= 0 ? 'success' : 'danger'}>${balance.toFixed(2)}</Badge></h4>
         </div>
       </div>
       {(currentUserRole === 'admin' || currentUserRole === 'edit') && (
@@ -214,13 +365,49 @@ function BudgetOperations() {
                   <Button variant="info" onClick={() => handleEditOperation(operation)}>
                     <PencilSquare /> Edit
                   </Button>
+                  &nbsp;
+                  <Button variant="danger" onClick={() => handleDeleteOperation(operation)}>
+                    <Trash /> Delete
+                  </Button>
                 </td>
               )}
             </tr>
           ))}
         </tbody>
       </Table>
-
+  
+      {operations.length > 0 && (
+        <div className="mt-4 graph-container">
+          <div className="row justify-content-center">
+            <div className="col-md-4">
+              <h5 className="text-center">Income & expenses for each month</h5>
+              <Bar data={processExpenseIncomeData(operations)} options={{ responsive: true }} />
+            </div>
+            <div className="col-md-4">
+              <h5 className="text-center">Monthly balance</h5>
+              <Line data={processBalanceData(operations)} options={{ responsive: true }} />
+            </div>
+            <div className="col-md-4">
+              <h5 className="text-center">Your expenses this month</h5>
+              <Pie 
+                data={processCurrentMonthCategoryData(operations)} 
+                options={{
+                  plugins: {
+                    tooltip: {
+                      callbacks: {
+                        label: function(tooltipItem) {
+                          return `$${tooltipItem.raw.toFixed(2)}`;
+                        }
+                      }
+                    }
+                  }
+                }} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+  
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>{editMode ? 'Edit Operation' : 'Add Operation'}</Modal.Title>
@@ -310,7 +497,7 @@ function BudgetOperations() {
         </Modal.Body>
       </Modal>
     </Container>
-  );
+  );  
 }
 
 export default BudgetOperations;

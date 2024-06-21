@@ -1,0 +1,9 @@
+.graph-container {
+  text-align: center; /* Center align all graphs */
+  margin-bottom: 10px;
+}
+
+.graph-container .col-md-4 {
+  flex: 1; /* Allow each graph to grow equally */
+  margin: 0 2px; /* Adjust margin for spacing between graphs */
+}
